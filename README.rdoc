@@ -1,0 +1,56 @@
+==README
+
+Decotagor is designed to be a simple (perhaps naive) delegation and decorating
+Ruby library.
+
+
+===Example Usage
+
+    class MyBiz
+      include Decogator
+
+      delegates :to_s, :to => :'@inst_var'
+      # An new instance method, 'to_s', is defined:
+      #   def to_s(*args, &block)
+      #     @inst_var.send(:to_s, *args, &block)
+      #   end
+      delegates :to_i, :to => :a_num
+
+      around :to_s, :call => :my_bizz
+
+      def initialize
+        @inst_var = "a string"
+        # ...
+      end
+
+      # Decorations have to be declared after the method they decorate
+      # is defined.
+      after :initialize, :call => :post_init
+
+      def post_init
+        puts "do this after initialize"
+      end
+
+      private
+      def my_biz
+        puts "entered my_biz"
+        yield
+        puts "leaving my_biz"
+      end
+
+      def a_num
+        3.14159
+      end
+    end
+
+    mb = MyBiz.new
+    # do this after initialize
+    # => #<MyBiz:0xb7c37370 @inst_var="a string">
+
+    mb.to_s
+    # entered my_biz
+    # leaving my_biz
+    # => "a string"
+
+    mb.to_i
+    # => 3
