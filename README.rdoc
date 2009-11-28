@@ -1,7 +1,9 @@
 ==README
 
 Decotagor is designed to be a simple (perhaps naive) delegation and decorating
-Ruby library.
+Ruby library.  At this time, this isn't complete, the decoration code base is a
+couple old ideas being replaced by one, currently incomplete, idea.  In short,
+at this time, the library is bullshit.
 
 
 ===Example Usage
