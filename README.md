@@ -245,13 +245,16 @@ by `R` and `A` respectively.
       R_2 (after)
        .
        .
-      R_m (after)
+      R_j (after)
       A_1
       A_2
        .
        .
       A_k
 
+The (before) and (after) labels following the around advice, `R_x`, indicate
+the portion that occurs before the advice yields and after the yield completes,
+respectively.
 Advice stacks from the method, outwards.  The first declared piece of before
 advice is evaluated immediately before the last declared piece of around advice.
 Similarly, the first piece of after advice is called immediately after the last
