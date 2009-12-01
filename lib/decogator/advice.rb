@@ -1,6 +1,7 @@
+require 'decogator/advice/identity_advice'
+require 'decogator/advice/join_point'
 require 'decogator/advice/after'
 require 'decogator/advice/around'
 require 'decogator/advice/before'
-require 'decogator/advice/identity_advice'
 require 'decogator/advice/tap'
 require 'decogator/advice/chain'

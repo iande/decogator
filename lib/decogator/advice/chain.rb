@@ -9,14 +9,12 @@ module Decogator
       end
 
       def call(inst, *args, &block)
-        params = @before.inject([args, block]) do |acc, b|
-          b.call(inst, *acc[0], &acc[1])
-        end
-        join_point = IdentityAdvice.new(@method.bind(inst), params)
-        return_value = @around.inject(join_point) do |acc, r|
-          r.procify(inst, join_point, &acc)
-        end.call
-        @after.inject(return_value) { |acc, a| a.call(inst, acc) }
+        @after.inject(@around.inject(IdentityAdvice.new(@method.bind(inst),
+            @before.inject([args, block]) { |acc, b|
+              b.call(inst, *acc[0], &acc[1])
+            })) { |acc, r| r.join(inst, acc) }.call) { |acc, a|
+          a.call(inst, acc)
+        }
       end
 
       def add_before(call)

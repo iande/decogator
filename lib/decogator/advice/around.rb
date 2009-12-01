@@ -5,13 +5,9 @@ module Decogator
         @call = call
       end
 
-      def procify(inst, jp, &cb)
+      def join(inst, jp)
         arity = (inst.respond_to?(@call)) ? inst.method(@call).arity : 0
-        if arity != 0
-          lambda { inst.send(@call, jp, &cb) }
-        else
-          lambda { inst.send(@call, &cb) }
-        end
+        JoinPoint.new(jp, (arity == 0) ? lambda { inst.send(@call, &jp) } : lambda { inst.send(@call, jp) })
       end
     end
   end

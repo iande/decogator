@@ -11,6 +11,14 @@ module Decogator
         @method.call(*@args, &@block)
       end
 
+      def [](idx)
+        @args[idx]
+      end
+
+      def []=(idx, v)
+        @args[idx] = v
+      end
+
       def args
         @args
       end
