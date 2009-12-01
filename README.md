@@ -10,9 +10,38 @@ and will be available shortly.
 
 ##Delegation
 
+Delegation allows method calls to one object to be forwarded to another.  The
+Decogator module creates proxy methods on the target object that merely send
+the call along to the specified method (public, private or protected) or instance
+variable specified.  For example:
+
+  delegates :each, :to => :@an_array
+  delegates :to_i, :to => :a_method
+  delegates :'[]', :to => :a_private_method
+  include Enumerable
+
+  def a_method
+    3.14195
+  end
+
+  private
+  def a_private_method
+    @an_array
+  end
+
+Calling `obj.to_i` will send the `to_i` message to `3.14195`, yielding a result
+of `3`.  Calling `obj[3]` will return the same value as `@an_array[3]`, and a
+call of `obj.map { ... }` will have the same effect as if the `map` function
+were called on `@an_array`.  The last example works because in delegating `each`
+to `@an_array`, a method named `each` was created, and the `Enumerable` module
+will provide `map` and friends to any object, provided the `each` method exists.
+
 ##Decoration with Advice
 
-Decogator provides four kinds of advice: before, after, around, and tap.
+Decogator provides four kinds of advice for decorating methods: before, after,
+around, and tap.  Decorating a method results in calls to that method being
+filtered by a chain of advice.  Depending upon the type of advice given, this
+filtering can happen before, after, or around the underlying method's execution.
 
 ###Before
 
@@ -201,27 +230,27 @@ stacks as seen below, where `B_x` denotes the before advice given in the `x`th
 call to `before`, the same is true of around/tap and after advice, represented
 by `R` and `A` respectively.
 
-    B_i
-     .
-     .
-    B_2
-    B_1
-    R_j (before)
-     .
-     .
-    R_2 (before)
-    R_1 (before)
-     M
-    R_1 (after)
-    R_2 (after)
-     .
-     .
-    R_m (after)
-    A_1
-    A_2
-     .
-     .
-    A_k
+      B_i
+       .
+       .
+      B_2
+      B_1
+      R_j (before)
+       .
+       .
+      R_2 (before)
+      R_1 (before)
+       M
+      R_1 (after)
+      R_2 (after)
+       .
+       .
+      R_m (after)
+      A_1
+      A_2
+       .
+       .
+      A_k
 
 Advice stacks from the method, outwards.  The first declared piece of before
 advice is evaluated immediately before the last declared piece of around advice.
@@ -230,3 +259,14 @@ piece of around advice completes.  At this time, there is no way to insert a
 piece of advice into a particular position within the advice chain, though that
 may eventually change.
 
+##To-Do
+
+1. Specs, specs, specs!
+2. Get rid of this join point business.  It's too opaque, and requires authors
+   to think about advice on my terms, instead of their own.  Passing blocks about
+   might become tricky, though.
+3. Consider accepting blocks as the advice method, instead of using the :call
+   option.  This could take some work, because you really can't pass blocks
+   to blocks in Ruby 1.8.
+4. RDocs.  Documentation should really start taking a higher priority in my
+   life.
