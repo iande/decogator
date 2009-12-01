@@ -1,12 +1,10 @@
-require 'decogator/chained_alias'
 require 'decogator/delegation'
 require 'decogator/decoration'
+require 'decogator/advice'
 
 module Decogator
   def self.included(base)
-    #base.extend(Decogator::ChainedAlias)
-    #base.extend(Decogator::ChainedAlias::CollisionPrevention)
-    base.extend(Decogator::Delegation)
-    base.extend(Decogator::Decoration)
+    base.send :include, Decogator::Decoration
+    base.send :include, Decogator::Delegation
   end
 end
