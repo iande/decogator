@@ -15,19 +15,19 @@ Decogator module creates proxy methods on the target object that merely send
 the call along to the specified method (public, private or protected) or instance
 variable specified.  For example:
 
-  delegates :each, :to => :@an_array
-  delegates :to_i, :to => :a_method
-  delegates :'[]', :to => :a_private_method
-  include Enumerable
+    delegates :each, :to => :@an_array
+    delegates :to_i, :to => :a_method
+    delegates :'[]', :to => :a_private_method
+    include Enumerable
 
-  def a_method
-    3.14195
-  end
+    def a_method
+      3.14195
+    end
 
-  private
-  def a_private_method
-    @an_array
-  end
+    private
+    def a_private_method
+      @an_array
+    end
 
 Calling `obj.to_i` will send the `to_i` message to `3.14195`, yielding a result
 of `3`.  Calling `obj[3]` will return the same value as `@an_array[3]`, and a
