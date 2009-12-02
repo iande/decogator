@@ -262,6 +262,26 @@ piece of around advice completes.  At this time, there is no way to insert a
 piece of advice into a particular position within the advice chain, though that
 may eventually change.
 
+##Known Issues
+
+1. Use of the "join point" object (I'm not even sure I'm using that term correctly)
+   sucks hard.  It would be more natural to allow around advice to receive parameters
+   corresponding to the ones passed to the underlying method, and yield those parameters
+   on into the chain.  However, for Tap to behave properly, we also need to be able
+   to yield to a block without parameters and have the current parameter configuration
+   passed along.
+2. If a method is (re-)defined after it has been decorated, the advice will not
+   be evaluated.  The same is true with delegation, though that's expected.  I'm
+   not sure if I consider this a bug yet, as it provides an easy way for authors
+   who extend a decorated superclass to "clear" the advice.
+3. Subclasses of a class with a decorated method break when the method is invoked.
+   The issue here is that the superclass has an instance_method that calls out to
+   the `with_advice_for` singleton method.  However, this method in turn relies
+   upon the existence of a class instance variable, which does not exist in the
+   subclass.  Resolving this should be as simple as exposing the class instance
+   variable and proceeding up the hierarchical chain when the class instance
+   variable (or the advice for the particular method) does not exist locally.
+
 ##To-Do
 
 1. Specs, specs, specs!
