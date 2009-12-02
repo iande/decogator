@@ -158,8 +158,8 @@ of around advice follow:
     end
 
     around :other_method, :call => :around_other
-    def around_other(meth, a, b)
-      meth.call(a + 2, b) * 3
+    def around_other(block, a, b)
+      yield(a + 2, b) * 3
     end
 
 In this example, a call to `obj.some_method(3,2)` results in 9, because the
@@ -171,15 +171,9 @@ next link in the chain.  If an implementor of around advice wishes to have
 access to the incoming parameters, it declares a parameter list that matches
 the underlying method, with the exception of an additional leading parameter.
 This can be seen in the declaration of `around_other` in the above example.
-The additional first parameter can be thought of as a method and moving execution
-along the advice chain is accomplished by sending the `call` message to this
-parameter, supplying arguments that the next link will receive as its parameters.
-The reason for the additional method parameter is to accommodate decorating
-methods that expect to receive blocks.  This convention will allow an advice
-chain to be executed, as well as allowing around advice implementors to call
-upon or modify any passed blocks along the way.  It's not perfect, but it's
-considerably better, in my opinion, than the join point method I had previously
-implemented.
+The leading parameter is the block passed to the original call, if any, as
+an object.  This kind of around advice implementation still uses `yield` to
+move itself along the advice chain.
 
 Tap advice is a special case of around advice that can neither
 modify the incoming parameters, nor alter the return value, of the underlying
@@ -267,28 +261,35 @@ may eventually change.
 
 ##Known Issues
 
-1. If a method is (re-)defined after it has been decorated, the advice will not
-   be evaluated.  The same is true with delegation, though that's expected.  I'm
-   not sure if I consider this a bug yet, as it provides an easy way for authors
-   who extend a decorated superclass to "clear" the advice.  A call to `super`
-   will result in the decorated superclass method being invoked, bypassing the
-   issue.  However, if the subclass defines a previously decorated method and
-   then attempts to decorate it, it's re-definition of the method is totally
-   ignored.  I do consider this to be a bug, and a fix would be to watch for
-   a method being defined in the subclass and start a new chain around the
-   newly defined method.  In which case, `super` may, or may not work?
 1. It's going to be slower than using inheritance. Each time a decorated method
    is invoked, the decorator chain is bound and evaluated.  There is certainly
    room for improvement, but optimizing would be premature at this time.
+1. While extending a class with a decorated method, overriding that method in
+   the base class, decorating the override, and calling super in the overridden
+   method all works as expected now, it is still possible to break things.  If
+   a class with decorated methods is renamed through the use of `const_set`, you
+   can expect breakage.  Guarding against this scenario is not something I intend
+   to bother with, unless an incredibly trivial solution presents itself to me.
+   However, as it is a case where things can go awry, I'll make note of it here.
+1. Before and after advice implemented with blocks cannot receive the block supplied
+   to the original call, assuming any was given.  In short, do not implement advice
+   with blocks when the underlying method depending upon being called with a block,
+   as such advice will effectively remove the block originally supplied.  In the
+   future, I will resolve this issue by changing how the before advice is
+   accumulated into the parameters to pass into the rest of the advice chain,
+   re-supplying any passed in block when invoking before advice defined with a
+   block.  Boy, that's convoluted.
+1. Before and after advice can now be implemented with a block.  However, around
+   around and tap advice cannot.  The convention of yielding through the around/tap
+   chain makes implementing such advice with a block impossible without severe
+   modification to the way advice is invoked.
 
 ##To-Do
 
 1. Specs, specs, specs!
-2. Consider accepting blocks as the advice method, instead of using the :call
-   option.  This could take some work, because you really can't pass blocks
-   to blocks in Ruby 1.8.  To do this, you'd have to re-work your advice method
-   definition code (no more shortcuts with [:before, :after ...].each ...).  You
-   will also need to modify your advice classes to handle blocks instead of
-   sending messages to objects.
-3. RDocs.  Documentation should really start taking a higher priority in my
+1. RDocs.  Documentation should really start taking a higher priority in my
    life.
+1. Treat before advice implemented as a block a bit differently during parameter
+   accumulation on account of such advice's inability to interact with any
+   blocks supplied to the original call.
+1. Refactor!

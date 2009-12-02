@@ -6,11 +6,11 @@ module Decogator
       end
 
       def call(inst, *args, &block)
-        arity = (inst.respond_to?(@call)) ? inst.method(@call).arity : 0
-        if arity != 0
-          inst.send(@call, *args, &block)
+        caller = (@call.is_a?(Proc)) ? @call : inst.method(@call)
+        unless caller.arity == 0
+          caller.call(*args, &block)
         else
-          inst.send(@call)
+          caller.call
           [args, block]
         end
       end
