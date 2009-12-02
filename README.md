@@ -274,13 +274,6 @@ may eventually change.
    be evaluated.  The same is true with delegation, though that's expected.  I'm
    not sure if I consider this a bug yet, as it provides an easy way for authors
    who extend a decorated superclass to "clear" the advice.
-3. Subclasses of a class with a decorated method break when the method is invoked.
-   The issue here is that the superclass has an instance_method that calls out to
-   the `with_advice_for` singleton method.  However, this method in turn relies
-   upon the existence of a class instance variable, which does not exist in the
-   subclass.  Resolving this should be as simple as exposing the class instance
-   variable and proceeding up the hierarchical chain when the class instance
-   variable (or the advice for the particular method) does not exist locally.
 
 ##To-Do
 

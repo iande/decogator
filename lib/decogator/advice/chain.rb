@@ -17,6 +17,10 @@ module Decogator
         }
       end
 
+      def bind(obj)
+        BoundChain.new(obj, self)
+      end
+
       def add_before(call)
         @before.unshift(Before.new(call))
       end
@@ -32,6 +36,10 @@ module Decogator
       def add_tap(call)
         @around.push(Tap.new(call))
       end
+
+      #def reseat
+       # self.class.new(self)
+      #end
     end
   end
 end

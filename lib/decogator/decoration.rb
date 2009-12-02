@@ -8,27 +8,33 @@ module Decogator
           call = opts[:call] || raise(ArgumentError, "no call specified")
           args.each do |meth_name|
             meth = meth_name.to_sym
-            @decogator_chain ||= {}
 
-            # If the method does not currently exist, write in some stuff
-            # to defer until it is defined.
-            unless @decogator_chain.has_key?(meth)
-              @decogator_chain[meth] = Decogator::Advice::Chain.new(instance_method(meth))
+            defined_before = __advice_chain__.has_key?(meth)
+            __advice_chain__[meth].send("add_#{advice}", call)
+            unless defined_before
               module_eval <<-EOS
                 def #{meth}(*args, &block)
-                  self.class.with_advice_for(#{meth.inspect}, self, *args, &block)
+                  self.class.__advice_chain__[#{meth.inspect}].call(self, *args, &block)
                 end
               EOS
             end
-            @decogator_chain[meth].send("add_#{advice}", call)
           end
         end
       end
 
-      def with_advice_for(meth, inst, *args, &block)
-        meth = meth.to_sym
-        raise ArgumentError, "no advice for method: #{meth}" unless @decogator_chain.has_key?(meth)
-        @decogator_chain[meth].call(inst, *args, &block)
+      def __advice_chain__
+        unless @__decogator_chain__
+          @__decogator_chain__ = Hash.new do |hash, key|
+            prior = ancestors.detect { |a| a != self && a.respond_to?(:__advice_chain__) }
+            init_with = if prior && prior.__advice_chain__.has_key?(key)
+              prior.__advice_chain__[key]
+            else
+              instance_method(key)
+            end
+            hash[key] = Decogator::Advice::Chain.new(init_with)
+          end
+        end
+        @__decogator_chain__
       end
     end
 
