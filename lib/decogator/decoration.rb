@@ -8,16 +8,12 @@ module Decogator
           call = opts[:call] || raise(ArgumentError, "no call specified")
           args.each do |meth_name|
             meth = meth_name.to_sym
-
-            defined_before = __advice_chain__.has_key?(meth)
             __advice_chain__[meth].send("add_#{advice}", call)
-            unless defined_before
-              module_eval <<-EOS
-                def #{meth}(*args, &block)
-                  self.class.__advice_chain__[#{meth.inspect}].call(self, *args, &block)
-                end
-              EOS
-            end
+            module_eval <<-EOS
+              def #{meth}(*args, &block)
+                self.class.__advice_chain__[#{meth.inspect}].call(self, *args, &block)
+              end
+            EOS
           end
         end
       end
@@ -25,12 +21,8 @@ module Decogator
       def __advice_chain__
         unless @__decogator_chain__
           @__decogator_chain__ = Hash.new do |hash, key|
-            prior = ancestors.detect { |a| a != self && a.respond_to?(:__advice_chain__) }
-            init_with = if prior && prior.__advice_chain__.has_key?(key)
-              prior.__advice_chain__[key]
-            else
-              instance_method(key)
-            end
+            prior = ancestors.detect { |a| a.respond_to?(:__advice_chain__) && a.__advice_chain__.has_key?(key) }
+            init_with = prior ? prior.__advice_chain__[key] : instance_method(key)
             hash[key] = Decogator::Advice::Chain.new(init_with)
           end
         end

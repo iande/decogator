@@ -36,10 +36,6 @@ module Decogator
       def add_tap(call)
         @around.push(Tap.new(call))
       end
-
-      #def reseat
-       # self.class.new(self)
-      #end
     end
   end
 end
