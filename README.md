@@ -283,6 +283,9 @@ may eventually change.
    might become tricky, though.
 3. Consider accepting blocks as the advice method, instead of using the :call
    option.  This could take some work, because you really can't pass blocks
-   to blocks in Ruby 1.8.
+   to blocks in Ruby 1.8.  To do this, you'd have to re-work your advice method
+   definition code (no more shortcuts with [:before, :after ...].each ...).  You
+   will also need to modify your advice classes to handle blocks instead of
+   sending messages to objects.
 4. RDocs.  Documentation should really start taking a higher priority in my
    life.
