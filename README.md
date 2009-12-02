@@ -273,7 +273,13 @@ may eventually change.
 2. If a method is (re-)defined after it has been decorated, the advice will not
    be evaluated.  The same is true with delegation, though that's expected.  I'm
    not sure if I consider this a bug yet, as it provides an easy way for authors
-   who extend a decorated superclass to "clear" the advice.
+   who extend a decorated superclass to "clear" the advice.  A call to `super`
+   will result in the decorated superclass method being invoked, bypassing the
+   issue.  However, if the subclass defines a previously decorated method and
+   then attempts to decorate it, it's re-definition of the method is totally
+   ignored.  I do consider this to be a bug, and a fix would be to watch for
+   a method being defined in the subclass and start a new chain around the
+   newly defined method.  In which case, `super` may, or may not work?
 
 ##To-Do
 
