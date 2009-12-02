@@ -1,12 +1,15 @@
 ##Preamble
 
-Decotagor is designed to be a simple (perhaps naive) delegation and decorating
-Ruby library.  Presently, everything appears to be working with the exception
-of dealing with subclasses.  If a base class is decorated, any subclasses will
-respond to decorated methods as if they were decorated, but will bomb because
-the decoration information is not available to them at this time.  Delegation
-appears to be have fine with subclasses.  Spec tests are needed for all this jazz,
-and will be available shortly.
+Decotagor is my own predictable adherence to unwritten rule of implementing a Ruby
+AOP library, articulated by Avdi Grimm.  The motivation for writing this
+library came from [one of my rambling thoughts](http://github.com/iande/blathering/blob/master/aspect_advice.md),
+and it isn't necessarily meant to be useful to anyone.  Writing this has proven
+to be a fun exercise in meta-programming, applying combinatory logic, deepening
+my understanding of the Ruby object model, and reinforcing my love of Ruby's
+expressiveness.  While the code was written by me, Reg Braithwaite's
+[take on advice in Ruby](http://github.com/raganwald/homoiconic/blob/master/2008-11-07/before_and_after_advice.rb)
+definitely influenced some of my approaches -- particularly when it came to
+understanding bugs that my approach initially introduced.
 
 ##Delegation
 
