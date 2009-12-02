@@ -277,6 +277,9 @@ may eventually change.
    ignored.  I do consider this to be a bug, and a fix would be to watch for
    a method being defined in the subclass and start a new chain around the
    newly defined method.  In which case, `super` may, or may not work?
+1. It's going to be slower than using inheritance. Each time a decorated method
+   is invoked, the decorator chain is bound and evaluated.  There is certainly
+   room for improvement, but optimizing would be premature at this time.
 
 ##To-Do
 
