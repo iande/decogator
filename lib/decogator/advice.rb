@@ -1,5 +1,5 @@
-require 'decogator/advice/identity_advice'
-require 'decogator/advice/join_point'
+require 'decogator/advice/bound_around'
+require 'decogator/advice/bound_tap'
 require 'decogator/advice/after'
 require 'decogator/advice/around'
 require 'decogator/advice/before'

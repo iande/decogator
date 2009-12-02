@@ -154,29 +154,32 @@ of around advice follow:
 
     around :some_method, :call => :do_around
     def do_around
-      r = yield
-      r + 3
+      yield + 3
     end
 
     around :other_method, :call => :around_other
-    def around_other(jp)
-      jp[0] = jp[0] + 2
-      jp.call * 3
+    def around_other(meth, a, b)
+      meth.call(a + 2, b) * 3
     end
 
 In this example, a call to `obj.some_method(3,2)` results in 9, because the
 given around advice added 3 to the original result of 6.  Also, a call
-to `obj.other_method(1, 2)` produces 15, rather than 3.  The reason for
-this is that `jp[0] = jp[0] + 2` changes the first parameter from 1 to 3, the
-underlying method is invoked returning a result of 5 to our around advice
-which is then multipled by 3, producing 15 as a final result.  The variable
-name `jp` stands for "join point", and I honestly kind of hate this.  I'd rather
-see around advice that accepts no parameters, in which case a block is passed
-and yielded to within the method (as is now the case), or where the same parameters
-are accepted as the underlying method, which is yielded to with the parameters,
-including any modifications.  For now, an intermediate object (the JoinPoint) was
-the fastest way to accommodate both use cases (parameter modifying and parameterless
-advice.)
+to `obj.other_method(1, 2)` produces 15, rather than 3.  A method that implements
+around advice that declares no parameters can `yield` its way along the advice
+chain.  It can also `yield(a, b)` to change the parameters received by the
+next link in the chain.  If an implementor of around advice wishes to have
+access to the incoming parameters, it declares a parameter list that matches
+the underlying method, with the exception of an additional leading parameter.
+This can be seen in the declaration of `around_other` in the above example.
+The additional first parameter can be thought of as a method and moving execution
+along the advice chain is accomplished by sending the `call` message to this
+parameter, supplying arguments that the next link will receive as its parameters.
+The reason for the additional method parameter is to accommodate decorating
+methods that expect to receive blocks.  This convention will allow an advice
+chain to be executed, as well as allowing around advice implementors to call
+upon or modify any passed blocks along the way.  It's not perfect, but it's
+considerably better, in my opinion, than the join point method I had previously
+implemented.
 
 Tap advice is a special case of around advice that can neither
 modify the incoming parameters, nor alter the return value, of the underlying
@@ -264,13 +267,7 @@ may eventually change.
 
 ##Known Issues
 
-1. Use of the "join point" object (I'm not even sure I'm using that term correctly)
-   sucks hard.  It would be more natural to allow around advice to receive parameters
-   corresponding to the ones passed to the underlying method, and yield those parameters
-   on into the chain.  However, for Tap to behave properly, we also need to be able
-   to yield to a block without parameters and have the current parameter configuration
-   passed along.
-2. If a method is (re-)defined after it has been decorated, the advice will not
+1. If a method is (re-)defined after it has been decorated, the advice will not
    be evaluated.  The same is true with delegation, though that's expected.  I'm
    not sure if I consider this a bug yet, as it provides an easy way for authors
    who extend a decorated superclass to "clear" the advice.  A call to `super`
@@ -284,14 +281,11 @@ may eventually change.
 ##To-Do
 
 1. Specs, specs, specs!
-2. Get rid of this join point business.  It's too opaque, and requires authors
-   to think about advice on my terms, instead of their own.  Passing blocks about
-   might become tricky, though.
-3. Consider accepting blocks as the advice method, instead of using the :call
+2. Consider accepting blocks as the advice method, instead of using the :call
    option.  This could take some work, because you really can't pass blocks
    to blocks in Ruby 1.8.  To do this, you'd have to re-work your advice method
    definition code (no more shortcuts with [:before, :after ...].each ...).  You
    will also need to modify your advice classes to handle blocks instead of
    sending messages to objects.
-4. RDocs.  Documentation should really start taking a higher priority in my
+3. RDocs.  Documentation should really start taking a higher priority in my
    life.

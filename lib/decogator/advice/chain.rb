@@ -9,12 +9,9 @@ module Decogator
       end
 
       def call(inst, *args, &block)
-        @after.inject(@around.inject(IdentityAdvice.new(@method.bind(inst),
-            @before.inject([args, block]) { |acc, b|
-              b.call(inst, *acc[0], &acc[1])
-            })) { |acc, r| r.join(inst, acc) }.call) { |acc, a|
-          a.call(inst, acc)
-        }
+        params = @before.inject([args, block]) { |acc, b| b.call(inst, *acc[0], &acc[1]) }
+        @after.inject(@around.inject(@method.bind(inst)) { |acc, r|
+          r.bind(inst, acc) }.call(*params[0], &params[1])) { |acc, a| a.call(inst, acc) }
       end
 
       def bind(obj)
